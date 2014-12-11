@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>${SiteName}</title>
+    </head>
+
+    <style type="text/css">
+    </style>
+
+    <script src="/jQuery/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript">
+        main = function() {
+            $("#BtnQuery").click(function() {
+                $("#ModifyEntry").load(
+                        "/cgi-bin/LibServer.py?action=ModifyBibliographyPage",
+                        $("#FormModifyItem").serialize()
+                );
+            });
+            $("#RadioNewItem").click(function() {
+                $("#DivModifyItem").hide();
+                $("#FormNewItem").show();
+            });
+            $("#RadioModifyItem").click(function() {
+                $("#FormNewItem").hide();
+                $("#DivModifyItem").show();
+            });
+            $(".BtnReadISBN").click(function() {
+                var htmlobj = $.ajax({url:"/cgi-bin/LibServer.py?action=ReadCode",async:false});
+                var ISBN = htmlobj.responseText;
+                ISBN = ISBN.replace(/\n/g, "");
+                ISBN = ISBN.replace(/\r/g, "");
+                $("#TextISBN01").val(ISBN);
+                $("#TextISBN02").val(ISBN);
+            });
+            $("#BtnQueryISBN").click(function() {
+                var ISBN = $("#TextISBN01").val();
+                var htmlobj = $.ajax({url:"/cgi-bin/LibServer.py?action=QueryISBN&ISBN=" + ISBN,async:false});
+                var obj = JSON.parse(htmlobj.responseText);
+                $("#BookName").val(obj.title);
+                $("#Author").val(obj.author.join('&&'));
+                $("#Publisher").val(obj.publisher);
+                $("#PubDate").val(obj.pubdate);
+                $("#TimeLimit").val("0");
+            });
+            $("#BtnSubmitNewBook").click(function() {
+                if ( !$("#TextISBN01").val() ) {
+                    alert("ISBN编码不能为空!");
+                    return false;
+                } else if( !$("#BookName").val() ) {
+                    alert("书名不能为空!");
+                    return false;
+                } else if ( !$("#Author").val() ) {
+                    alert("作者不能为空!");
+                    return false;
+                } else if ( !$("#Publisher").val() ) {
+                    alert("出版社不能为空!");
+                    return false;
+                } else if ( !$("#PubDate").val() ) {
+                    alert("出版日期不能为空!");
+                    return false;
+                } else if ( !$("#TimeLimit").val() ) {
+                    alert("借阅时限不能为空!");
+                    return false;
+                }
+                $.post(
+                        "/cgi-bin/LibServer.py?action=ManageBibliography&subaction=Add",
+                        $("#FormNewItem").serialize(),
+                        function(data) {
+                            alert(data);
+                        }
+                );
+                return true;
+            });
+            $("#DivModifyItem").hide();
+        };
+        $(document).ready(main);
+    </script>
+
+    <body>
+        <form>
+            <fieldset>
+                <legend>功能选择</legend>
+                <input type="radio" id="RadioNewItem" checked="checked" name="function" />
+                <label for="RadioNewItem">新建书目</label>
+                <input type="radio" id="RadioModifyItem" name="function" />
+                <label for="RadioModifyItem">修改/删除书目</label>
+            </fieldset>
+        </form>
+        <form id="FormNewItem" >
+            <fieldset>
+                <legend>新建书目</legend>
+                <table>
+                    <tr>
+                        <td>
+                            <label>ISBN编码</label>
+                        </td>
+                        <td>
+                            <input type="text" name="ISBN" id="TextISBN01" />
+                        </td>
+                        <td>
+                            <input type="button" value="从摄像头读取ISBN" class="BtnReadISBN">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="BookName">书名</label>
+                        </td>
+                        <td>
+                            <input type="text" name="BookName" id="BookName" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="Author">作者</label>
+                        </td>
+                        <td>
+                            <input type="text" name="Author" id="Author" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="Publisher">出版社</label>
+                        </td>
+                        <td>
+                            <input type="text" name="Publisher" id="Publisher" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="PubDate">出版日期</label>
+                        </td>
+                        <td>
+                            <input type="text" name="PubDate" id="PubDate" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="TimeLimit">借阅时限（天）</label>
+                        </td>
+                        <td>
+                            <input type="text" name="TimeLimit" id="TimeLimit" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="button" value="确认新建书目" id="BtnSubmitNewBook">
+                        </td>
+                        <td>
+                            <input type="button" value="自动检索书目信息" id="BtnQueryISBN">
+                        </td>
+                    </tr>
+                </table>
+            </fieldset>
+        </form>
+        <div id="DivModifyItem">
+            <form id="FormModifyItem">
+                <fieldset>
+                    <legend>修改/删除书目</legend>
+                    <table>
+                        <tr>
+                            <td>
+                                <input type="button" value="查询" id="BtnQuery">
+                                <input type="text" name="KeyWord" id="TextISBN02" />
+                                <label>根据：</label>
+                            </td>
+                            <td>
+                                <input type="radio" name="subaction" value="BookName" checked="checked" />
+                                <label>书名</label>
+                            </td>
+                            <td>
+                                <input type="radio" name="subaction" value="Publisher" />
+                                <label>出版社</label>
+                            </td>
+                            <td>
+                                <input type="radio" name="subaction" value="ISBN" />
+                                <label>ISBN</label>
+                                <input type="button" value="从摄像头读取ISBN" class="BtnReadISBN">
+                            </td>
+                        </tr>
+                    </table>
+                </fieldset>
+            </form>
+            <div id="ModifyEntry">
+
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,67 @@
+<fieldset>
+    <script>
+        $(".BtnDeleteItem").click(function() {
+            var root = $(this).parent();
+            console.log(root.serialize());
+            $.post(
+                    "/cgi-bin/LibServer.py?action=ManageBibliography&subaction=Del",
+                    root.serialize(),
+                    function(data) {
+                        alert(data);
+                    }
+            );
+        });
+        $(".BtnUpdateItem").click(function() {
+            var root = $(this).parent();
+            console.log(root.serialize());
+            $.post(
+                    "/cgi-bin/LibServer.py?action=ManageBibliography&subaction=Modify",
+                    root.serialize(),
+                    function(data) {
+                        alert(data);
+                    }
+            );
+        });
+    </script>
+    <style type="text/css">
+        th {
+            width: 12em;
+            font-size: 1.1em;
+        }
+        .Info {
+            width: 12em;
+        }
+        .BtnUpdateItem {
+            width: 5em;
+        }
+        .BtnDeleteItem {
+            width: 5em;
+        }
+    </style>
+    <legend>查询结果</legend>
+    <table border="0">
+        <tr>
+            <th>ISBN编码</th>
+            <th>书名</th>
+            <th>作者</th>
+            <th>出版社</th>
+            <th>出版日期</th>
+            <th>借阅时限（天）</th>
+            <th>操作</th>
+        </tr>
+    </table>
+
+%for item in Results:
+        <form class="Input">
+            <input class="Info" type="text" name="ISBN" id="TextISBN01" value="${item[0].decode('utf-8')}" readonly="readonly" />
+            <input class="Info" type="text" name="BookName" id="BookName" value="${item[1].decode('utf-8')}" />
+            <input class="Info" type="text" name="Author" id="Author" value="${item[2].decode('utf-8')}" />
+            <input class="Info" type="text" name="Publisher" id="Publisher" value="${item[3].decode('utf-8')}" />
+            <input class="Info" type="text" name="PubDate" id="PubDate" value="${item[4].decode('utf-8')}" />
+            <input class="Info" type="text" name="TimeLimit" id="TimeLimit" value="${item[5]}" />
+            <input type="button" value="更新" class="BtnUpdateItem">
+            <input type="button" value="删除" class="BtnDeleteItem">
+        </form>
+%endfor
+    </table>
+</fieldset>
